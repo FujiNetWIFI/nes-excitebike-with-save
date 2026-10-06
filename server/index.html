@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Excitebike track repository</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 64em; margin: 2em auto; padding: 0 1em; color: #222; background: #fafafa; }
+  h1 { font-size: 1.5em; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: .35em .6em; border-bottom: 1px solid #ddd; vertical-align: top; }
+  td.strip { font-family: ui-monospace, monospace; font-size: .85em; white-space: nowrap; overflow-x: auto; max-width: 28em; }
+  code { font-family: ui-monospace, monospace; }
+  .muted { color: #666; }
+</style>
+</head>
+<body>
+<h1>Excitebike track repository</h1>
+<p>Tracks saved from Excitebike's design mode on an NES with a FujiNet cartridge.
+In the game, SAVE asks for a track name and a two-digit slot (the player name comes from the
+FujiNet's shared app key) and LOAD lists the saved slots; every save is kept as a new version,
+so an overwritten track can still be fetched.</p>
+{{if not .Slots}}
+<p class="muted">No tracks have been saved yet.</p>
+{{else}}
+<table>
+<tr><th>Slot</th><th>Name</th><th>By</th><th>Laps</th><th>Columns</th><th>Last saved</th><th>Versions</th><th>Track</th><th></th></tr>
+{{range .Slots}}
+<tr>
+  <td><code>{{.SlotName}}</code></td>
+  <td>{{if .Name}}{{.Name}}{{else}}<span class="muted">unnamed</span>{{end}}</td>
+  <td>{{if .User}}{{.User}}{{else}}<span class="muted">unknown</span>{{end}}</td>
+  <td>{{.Laps}}</td>
+  <td>{{.Columns}}</td>
+  <td>{{.Updated}}</td>
+  <td><a href="/api/track/{{.SlotName}}/versions">{{.Versions}}</a></td>
+  <td class="strip">{{.Strip}}</td>
+  <td><a href="/api/track/{{.SlotName}}">download</a></td>
+</tr>
+{{end}}
+</table>
+<p class="muted">Track strip: <code>_</code> flat column, <code>|</code> finish line, letters as the editor labels its pieces (lowercase: play-mode-B only).</p>
+{{end}}
+<h2>API</h2>
+<ul>
+  <li><code>GET /api/track/NN</code> the latest 320 bytes of slot NN (<code>application/octet-stream</code>), 404 when empty</li>
+  <li><code>POST /api/track/NN?name=MY+TRACK&amp;user=THOM</code> store exactly 320 bytes (64-byte header + 256-byte track) as a new version; answers <code>OK</code></li>
+  <li><code>GET /api/tracks?bin=1&amp;page=P</code> a 204-byte page of ten slot records for the game (<code>&amp;slot=NN</code> for one slot)</li>
+  <li><code>GET /api/track/NN/versions</code> JSON list of versions; <code>GET /api/track/NN/v/V</code> one version's bytes</li>
+  <li><code>GET /api/tracks</code> JSON summary of every slot in use</li>
+</ul>
+</body>
+</html>

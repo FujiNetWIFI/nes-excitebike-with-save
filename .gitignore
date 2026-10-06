@@ -1,0 +1,6 @@
+rom/*.nes
+build/
+server/db/
+server/excitebike-tracks
+*.o
+__pycache__/
